@@ -311,11 +311,11 @@ def run_forward_test(model, ct, timeframe, frac_be, limit_low_range, limit_top_r
     if do_month == 8: month='August'
     if do_month == 9: month='September'
     if do_month == 't': month='Training'
-    if balance > 1050 and pf > 1.1 or True:
+    message = ''
+    if balance > 1070 and pf > 1.1:
         save_model = True
-    if balance > 1050:
-        print(f"Final {month} balance after trading: {int(balance)}, Wins: {n_win}, Losses: {n_loss}, BreakEven: {n_be}, MarketClose: {n_market}, usd_win: {int(usd_win)}, usd_loss: {int(usd_loss)}, Profit factor: {pf:.2f}")
-    return balance, pf, usd_win, usd_loss, n_win, n_loss, n_be, n_market, save_model
+        message = f"Final {month} balance after trading: {int(balance)}, Wins: {n_win}, Losses: {n_loss}, BreakEven: {n_be}, MarketClose: {n_market}, usd_win: {int(usd_win)}, usd_loss: {int(usd_loss)}, Profit factor: {pf:.2f}"
+    return balance, pf, usd_win, usd_loss, n_win, n_loss, n_be, n_market, save_model, message
 
 frac_be, limit_low_range, limit_top_range, use_NY_trading_hour, use_day_month = 0.6, 130, 2000, True, 'None'  # Options: None, 'day', 'month
 ma_periods, periods_look_back = np.arange(5,201,5), [10, 30, 50, 70, 90, 120, 140, 160, 180, 200]
@@ -331,11 +331,14 @@ for timeframe in ['15m','30m']:
         timeframe, side, ratio, window, method, prices_col_1, prices_col_2, multiplier, period_lb, std_dev, shift_open = get_inputs(model_name)
         model = torch.load(path+f'models_{timeframe}/{model_name}.pt', weights_only=False, map_location=device)
         ct = joblib.load(path+f'models_{timeframe}/ct_{model_name}.pkl')
-        balance, pf, usd_win, usd_loss, n_win, n_loss, n_be, n_market, save_model = run_forward_test(model, ct, timeframe, frac_be, limit_low_range, limit_top_range, shift_open, use_NY_trading_hour, use_day_month, method, prices_col_1, prices_col_2, period_lb, std_dev, multiplier, ratio, side, window, ma_periods, periods_look_back, cols_original=ct.feature_names_in_, X_train=None, do_month=9)
-        if balance > 1050:
+
+        message_all = ''
+        for do_month in [9,8,7,'t']:
+            balance, pf, usd_win, usd_loss, n_win, n_loss, n_be, n_market, save_model, message = run_forward_test(model, ct, timeframe, frac_be, limit_low_range, limit_top_range, shift_open, use_NY_trading_hour, use_day_month, method, prices_col_1, prices_col_2, period_lb, std_dev, multiplier, ratio, side, window, ma_periods, periods_look_back, cols_original=ct.feature_names_in_, X_train=None, do_month=do_month)
+            if not save_model: break
+            message_all += message+'\n'
+
+        if save_model:
             print(model_name)
             print(f'Info: {timeframe} {side}, shift_open: {shift_open}, window: {window}, method: {method}, prices: {prices_col_1}-{prices_col_2} multiplier: {multiplier}, std_dev: {std_dev}, period_target: {period_lb}, ratio: {ratio}, use_NY_trading_hour: {use_NY_trading_hour}, use_day_month: {use_day_month}')
-            balance, pf, usd_win, usd_loss, n_win, n_loss, n_be, n_market, save_model = run_forward_test(model, ct, timeframe, frac_be, limit_low_range, limit_top_range, shift_open, use_NY_trading_hour, use_day_month, method, prices_col_1, prices_col_2, period_lb, std_dev, multiplier, ratio, side, window, ma_periods, periods_look_back, cols_original=ct.feature_names_in_, X_train=None, do_month=7)
-            balance, pf, usd_win, usd_loss, n_win, n_loss, n_be, n_market, save_model = run_forward_test(model, ct, timeframe, frac_be, limit_low_range, limit_top_range, shift_open, use_NY_trading_hour, use_day_month, method, prices_col_1, prices_col_2, period_lb, std_dev, multiplier, ratio, side, window, ma_periods, periods_look_back, cols_original=ct.feature_names_in_, X_train=None, do_month=8)
-            balance, pf, usd_win, usd_loss, n_win, n_loss, n_be, n_market, save_model = run_forward_test(model, ct, timeframe, frac_be, limit_low_range, limit_top_range, shift_open, use_NY_trading_hour, use_day_month, method, prices_col_1, prices_col_2, period_lb, std_dev, multiplier, ratio, side, window, ma_periods, periods_look_back, cols_original=ct.feature_names_in_, X_train=None, do_month='t')
-            print('\n')
+            print(message_all)
