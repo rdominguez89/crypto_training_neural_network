@@ -4,7 +4,7 @@ from features_calc import do_search_entries, do_reshape_window, do_training, rea
 
 min_rows = 5000
 timeframes = ['30m']#,'1h','4h']#,'15m']  
-do_long, do_short = True, False
+do_long, do_short = True, True
 ma_periods, periods_look_back, ratios, windows = np.arange(5,201,5), [10, 30, 50, 70, 90, 120, 140, 160, 180, 200], [2,3,4,5], range(4, 15, 2)
 
 use_NY_trading_hour = True

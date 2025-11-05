@@ -319,7 +319,7 @@ def run_forward_test(model, ct, timeframe, frac_be, limit_low_range, limit_top_r
 
 frac_be, limit_low_range, limit_top_range, use_NY_trading_hour, use_day_month = 0.6, 130, 2000, True, 'None'  # Options: None, 'day', 'month
 ma_periods, periods_look_back = np.arange(5,201,5), [10, 30, 50, 70, 90, 120, 140, 160, 180, 200]
-path = '../test_12/'
+path = '../test_12_all_models/test_12/'
 for timeframe in ['15m','30m']:
     #if timeframe == '30m':continue
     models_tf = [f for f in os.listdir(path+f'models_{timeframe}') if f.endswith('.pt')]
@@ -333,7 +333,7 @@ for timeframe in ['15m','30m']:
         ct = joblib.load(path+f'models_{timeframe}/ct_{model_name}.pkl')
 
         message_all = ''
-        for do_month in [9,8,7,'t']:
+        for do_month in [10,9,8,7,'t']:
             balance, pf, usd_win, usd_loss, n_win, n_loss, n_be, n_market, save_model, message = run_forward_test(model, ct, timeframe, frac_be, limit_low_range, limit_top_range, shift_open, use_NY_trading_hour, use_day_month, method, prices_col_1, prices_col_2, period_lb, std_dev, multiplier, ratio, side, window, ma_periods, periods_look_back, cols_original=ct.feature_names_in_, X_train=None, do_month=do_month)
             if not save_model: break
             message_all += message+'\n'
